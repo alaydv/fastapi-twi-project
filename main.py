@@ -180,6 +180,21 @@ def delete_user():
     tags=["Tweets"]
     )
 def home():
+    """
+    Show all tweets
+
+    This path operation show all tweets in the app
+
+    Parameters:
+        -
+
+    Return a json with all tweets in the app whit the following info:
+    - tweet_id: UUID
+    - content: str
+    - created_at: datetime
+    - updated_at: Optional[datetime]
+    - by: User
+    """
     with open("tweets.json", "r", encoding="utf-8") as f:
         results = json.loads(f.read())
         return results
