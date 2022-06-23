@@ -47,7 +47,7 @@ class UserRegister(User):
     )
 
 class Tweet(BaseModel):
-    tweet_id: UUID = Field(...)
+    tweet_id: UUID = Field(default_factory=uuid4)
     content: str = Field(
         ...,
         min_length=1,
@@ -180,9 +180,11 @@ def delete_user():
     tags=["Tweets"]
     )
 def home():
-    return {"Twiter API": "Working"}
+    with open("tweets.json", "r", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        return results
 
-### Show a tweet
+### Post a tweet
 @app.post(
     path="/post",
     response_model=Tweet,
@@ -190,8 +192,35 @@ def home():
     summary="Post a Tweet",
     tags=["Tweets"]
 )
-def post():
-    pass
+def post(tweet: Tweet = Body(...)):
+    """
+    Post a tweet
+
+    This path operation creates a new tweet in the app
+
+    Parameters:
+    - Request Body:
+        - **tweet: Tweet**
+
+    Return a tweet whit the following info:
+    - tweet_id: UUID
+    - content: str
+    - created_at: datetime
+    - updated_at: Optional[datetime]
+    - by: User
+    """
+    with open("tweets.json", "r+", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        tweets_dict = tweet.dict()
+        tweets_dict["tweet_id"] = str(tweets_dict["tweet_id"])
+        tweets_dict["created_at"] = str(tweets_dict["created_at"])
+        tweets_dict["updated_at"] = str(tweets_dict["updated_at"])
+        tweets_dict["by"]["user_id"] = str(tweets_dict["by"]["user_id"])
+        tweets_dict["by"]["birth_date"] = str(tweets_dict["by"]["birth_date"])
+        results.append(tweets_dict)
+        f.seek(0)
+        f.write(json.dumps(results))
+        return tweet
 
 ### Show a tweet
 @app.get(
