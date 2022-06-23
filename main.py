@@ -80,11 +80,11 @@ def signup(user: UserRegister = Body(...)):
         - **user: UserRegister**
 
     Returns a user model:
-        - user_id: UUID
-        - email: EmailStr
-        - first_name: str
-        - last_name: str
-        - birth_day: date
+    - user_id: UUID
+    - email: EmailStr
+    - first_name: str
+    - last_name: str
+    - birth_day: date
     """
     with open("users.json", "r+", encoding="utf-8") as f:
         results = json.loads(f.read())
@@ -117,7 +117,24 @@ def login():
     tags=["Users"]
 )
 def show_all_users():
-    pass
+    """
+    Show all users
+
+    This path operation show all user in the app
+
+    Parameters:
+        -
+
+    Returns all users whit the following info:
+    - user_id: UUID
+    - email: EmailStr
+    - first_name: str
+    - last_name: str
+    - birth_day: date
+    """
+    with open("users.json", "r", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        return results
 
 ### Show a user
 @app.get(
