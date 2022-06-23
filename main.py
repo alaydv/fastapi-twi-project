@@ -1,5 +1,6 @@
 # Python
-from uuid import UUID
+import json
+from uuid import UUID,uuid4
 from datetime import date, datetime
 from typing import Optional, List
 
@@ -10,23 +11,21 @@ from pydantic import EmailStr, SecretStr
 # FastApi
 from fastapi import FastAPI
 from fastapi import status
-from fastapi import Body, Path
+from fastapi import Body
 
 
 app = FastAPI()
 
 # Models
 class BaseUser(BaseModel):
-    user_id: UUID = Field(...)
+    user_id: UUID = Field(default_factory=uuid4)
     email: EmailStr = Field(...)
-
 
 class UserLogin(BaseUser):
     password: SecretStr = Field(
         ...,
         min_length=8
     )
-
 
 class User(BaseUser):
     first_name: str = Field(
@@ -39,8 +38,13 @@ class User(BaseUser):
         min_length=1,
         max_length=50
     )
-    birth_day: Optional[date] = Field(default=None)
+    birth_date: Optional[date] = Field(default=None)
 
+class UserRegister(User):
+    password: SecretStr = Field(
+        ...,
+        min_length=8
+    )
 
 class Tweet(BaseModel):
     tweet_id: UUID = Field(...)
@@ -63,13 +67,35 @@ class Tweet(BaseModel):
     response_model=User,
     status_code=status.HTTP_201_CREATED,
     summary="Create a user",
-    tags=["User"]
+    tags=["Users"]
 )
-def signup():
+def signup(user: UserRegister = Body(...)):
     """
-    
+    Signup
+
+    This path operation register a user in the app
+
+    Parameters:
+    - Request Body Parameter:
+        - **user: UserRegister**
+
+    Returns a user model:
+        - user_id: UUID
+        - email: EmailStr
+        - first_name: str
+        - last_name: str
+        - birth_day: date
     """
-    pass
+    with open("users.json", "r+", encoding="utf-8") as f:
+        results = json.loads(f.read())
+        user_dict = user.dict()
+        user_dict["user_id"] = str(user_dict["user_id"])
+        user_dict["birth_date"] = str(user_dict["birth_date"])
+        user_dict["password"] = str(user_dict["password"])
+        results.append(user_dict)
+        f.seek(0)
+        f.write(json.dumps(results))
+        return user
 
 ### Login a user
 @app.post(
@@ -77,7 +103,7 @@ def signup():
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Login a user",
-    tags=["User"]
+    tags=["Users"]
 )
 def login():
     pass
@@ -88,7 +114,7 @@ def login():
     response_model=List[User],
     status_code=status.HTTP_200_OK,
     summary="Show all users",
-    tags=["User"]
+    tags=["Users"]
 )
 def show_all_users():
     pass
@@ -99,7 +125,7 @@ def show_all_users():
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Show a user",
-    tags=["User"]
+    tags=["Users"]
 )
 def show_a_user():
     pass
@@ -110,7 +136,7 @@ def show_a_user():
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Update a user",
-    tags=["User"]
+    tags=["Users"]
 )
 def update_user():
     pass
@@ -121,7 +147,7 @@ def update_user():
     response_model=User,
     status_code=status.HTTP_200_OK,
     summary="Delete a user",
-    tags=["User"]
+    tags=["Users"]
 )
 def delete_user():
     pass
@@ -134,7 +160,7 @@ def delete_user():
     response_model=List[Tweet],
     status_code=status.HTTP_200_OK,
     summary="Show all Tweets",
-    tags=["Tweet"]
+    tags=["Tweets"]
     )
 def home():
     return {"Twiter API": "Working"}
@@ -145,7 +171,7 @@ def home():
     response_model=Tweet,
     status_code=status.HTTP_201_CREATED,
     summary="Post a Tweet",
-    tags=["Tweet"]
+    tags=["Tweets"]
 )
 def post():
     pass
@@ -156,7 +182,7 @@ def post():
     response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary="Show a Tweet",
-    tags=["Tweet"]
+    tags=["Tweets"]
 )
 def show_a_tweet():
     pass
@@ -167,7 +193,7 @@ def show_a_tweet():
     response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary="Update a Tweet",
-    tags=["Tweet"]
+    tags=["Tweets"]
 )
 def update_a_tweet():
     pass
@@ -178,7 +204,7 @@ def update_a_tweet():
     response_model=Tweet,
     status_code=status.HTTP_200_OK,
     summary="Delete a Tweet",
-    tags=["Tweet"]
+    tags=["Tweets"]
 )
 def delete_a_tweet():
     pass
