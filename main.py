@@ -66,6 +66,9 @@ class Tweet(BaseModel):
     tags=["User"]
 )
 def signup():
+    """
+    
+    """
     pass
 
 ### Login a user
